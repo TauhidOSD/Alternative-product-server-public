@@ -1,20 +1,17 @@
-const express=require('express');
-const cors =require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-require('dotenv').config()
+const express = require("express");
+const cors = require("cors");
+const { MongoClient, ServerApiVersion } = require("mongodb");
+require("dotenv").config();
 
-const  app= express();
-const port =process.env.PORT || 5000;
-
+const app = express();
+const port = process.env.PORT || 5000;
 
 //middleware
-
 
 app.use(cors({}));
 app.use(express.json());
 
-console.log(process.env.DB_PASS)
-
+console.log(process.env.DB_PASS);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.moefco9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -24,47 +21,47 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
   try {
-
-    const recentQueries =client.db('AlternativeProduct').collection('RecentQueries')
-
+    const recentQueries = client
+      .db("AlternativeProduct")
+      .collection("RecentQueries");
+    const myQurie = client.db("AlternativeProduct").collection("myQurie");
 
     //Queries add
-    app.post('/newQueries',async(req,res)=>{
-        const Queries=req.body;
-        console.log(Queries);
-    })
+    app.post("/newQueries", async (req, res) => {
+      const Queries = req.body;
+      console.log(Queries);
+      const result =await myQurie.insertOne(Queries);
+      res.send(result);
+    });
 
     //get recentQuries
-    app.get('/RecentQueries',async (req,res)=>{
+    app.get("/RecentQueries", async (req, res) => {
+      const result = await recentQueries.find().toArray();
 
-        const result=await recentQueries.find().toArray()
-
-        res.send(result)
-    })
+      res.send(result);
+    });
 
     await client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
-    
   }
 }
 run().catch(console.dir);
 
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
 
-app.get('/',(req,res)=>{
-
-    res.send('Server is running')
-})
-
-app.listen(port,()=>{
-    console.log(`Alternative Product Server is runnin on port ${port}`)
-})
- 
+app.listen(port, () => {
+  console.log(`Alternative Product Server is runnin on port ${port}`);
+});
