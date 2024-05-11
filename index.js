@@ -38,6 +38,13 @@ async function run() {
       const result =await myQurie.insertOne(Queries);
       res.send(result);
     });
+    //Get Queries
+    app.get("/newQueries",async(req,res)=>{
+        const cursor=myQurie.find();
+        const result =await cursor.toArray();
+        res.send(result);
+    })
+
 
     //get recentQuries
     app.get("/RecentQueries", async (req, res) => {
