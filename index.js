@@ -33,6 +33,12 @@ async function run() {
     const recentQueries =client.db('AlternativeProduct').collection('RecentQueries')
 
 
+    //Queries add
+    app.post('/newQueries',async(req,res)=>{
+        const Queries=req.body;
+        console.log(Queries);
+    })
+
     //get recentQuries
     app.get('/RecentQueries',async (req,res)=>{
 
