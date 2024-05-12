@@ -47,6 +47,35 @@ async function run() {
        res.send(result);
     })
 
+    //upadate 
+    app.get('/newQueries/:id',async(req,res)=>{
+        const id=req.params.id;
+        const query ={_id:new ObjectId(id)}
+        const result =await myQurie.findOne(query);
+        res.send(result);
+    })
+  //
+    app.put('/newQueries/:id',async(req,res)=>{
+       const id=req.params.id; 
+       const filter ={_id: (id)}
+       const option ={upsert:true};
+       const updateQuries=req.body;
+       const update={
+        $set:{
+             P_name:updateQuries.P_name ,
+              P_Brand:updateQuries.P_Brand ,
+               P_URL:updateQuries.P_URL ,
+                QueryTitle:updateQuries.QueryTitle ,
+                 BoycottingReason:updateQuries.BoycottingReason 
+
+        }
+       }
+       const result =await myQurie.updateOne(filter,update, option);
+       res.send(result);
+
+    })
+
+
 
     //Get Queries
     app.get("/newQueries",async(req,res)=>{
