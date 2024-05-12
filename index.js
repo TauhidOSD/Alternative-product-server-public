@@ -39,6 +39,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/newQueries/:email",async(req,res)=>{
+        console.log(req.params.email);
+        const result = await myQurie.find({email:req.params.email}).toArray();
+        res.send(result);
+    })
+
+
     //delete 
     app.delete('/newQueries/:id',async(req,res)=>{
        const id=req.params.id;
@@ -46,15 +53,15 @@ async function run() {
        const result =await myQurie.deleteOne(query);
        res.send(result);
     })
-
-    //upadate 
+    
     app.get('/newQueries/:id',async(req,res)=>{
         const id=req.params.id;
         const query ={_id:new ObjectId(id)}
         const result =await myQurie.findOne(query);
         res.send(result);
     })
-  //
+    //
+    //upadate 
     app.put('/newQueries/:id',async(req,res)=>{
        const id=req.params.id; 
        const filter ={_id: (id)}
