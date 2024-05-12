@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -38,6 +38,16 @@ async function run() {
       const result =await myQurie.insertOne(Queries);
       res.send(result);
     });
+
+    //delete 
+    app.delete('/newQueries/:id',async(req,res)=>{
+       const id=req.params.id;
+       const query={_id: new ObjectId(id)} 
+       const result =await myQurie.deleteOne(query);
+       res.send(result);
+    })
+
+
     //Get Queries
     app.get("/newQueries",async(req,res)=>{
         const cursor=myQurie.find();
