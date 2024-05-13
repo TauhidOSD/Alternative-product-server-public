@@ -32,6 +32,14 @@ const client = new MongoClient(uri, {
   },
 });
 
+//middleware for cookies
+
+const logger =(req,res,next)=>{
+    console.log('log info',req.method,req.url);
+    next();
+}
+
+
 async function run() {
   try {
     const recentQueries = client
@@ -129,7 +137,7 @@ async function run() {
 
 
     //get recentQuries
-    app.get("/RecentQueries", async (req, res) => {
+    app.get("/RecentQueries", logger,async (req, res) => {
       const result = await recentQueries.find().toArray();
       console.log('cook cookies',req.cookies)
 
