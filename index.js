@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const jwt =require('jsonwebtoken');
+const cookieParser =require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -16,6 +17,7 @@ app.use(cors({
     credentials:true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 console.log(process.env.DB_PASS);
 
@@ -42,7 +44,25 @@ async function run() {
         const user=req.body;
         console.log('user for token',user);
         const token =jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1000h'});
-        res.send({token});
+        // res.cookie('token',token,{
+        //    httpOnly:true,
+        //    secure:true, 
+        //    sameSite: 'strict'
+        // })
+        console.log(token);
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', 
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+
+        })
+        .send({success:true,token});
+   })
+   //cookie user logout
+   app.post('/logout',async(req,res)=>{
+    const user =req.body;
+    console.log('logging out',user);
+    res.clearCookie('token',{maxAge: 0}).send({success:true})
    })
 
 
@@ -111,6 +131,7 @@ async function run() {
     //get recentQuries
     app.get("/RecentQueries", async (req, res) => {
       const result = await recentQueries.find().toArray();
+      console.log('cook cookies',req.cookies)
 
       res.send(result);
     });
@@ -129,6 +150,7 @@ run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
+  
 });
 
 app.listen(port, () => {
