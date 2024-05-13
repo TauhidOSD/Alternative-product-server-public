@@ -41,8 +41,19 @@ const logger =(req,res,next)=>{
 
 const verifyToken =(req,res,next)=>{
     const token = req?.cookies?.token;
-    console.log('token in the middleware : ',token);
-    next();
+    // console.log('token in the middleware : ',token);
+    if(!token){
+        return res.status(401).send({message: 'unauthorized access'})
+    }
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
+        if(err){
+          return res.status(401).send({message: 'unauthorized access'})  
+        }
+        req.user = decoded;
+        next();
+    })
+    
 }
 
 
@@ -144,8 +155,12 @@ async function run() {
 
     //get recentQuries
     app.get("/RecentQueries", logger,verifyToken,async (req, res) => {
+        console.log('token owner info',req.user,req.query.email);
+
       const result = await recentQueries.find().toArray();
-    //   console.log('cook cookies',req.cookies)
+      if(req.user.email !== req.query.email){
+        return res.status(403).send({message: 'forbidden access'})
+      }
 
       res.send(result);
     });
