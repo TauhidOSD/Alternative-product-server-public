@@ -43,7 +43,7 @@ const verifyToken =(req,res,next)=>{
     const token = req?.cookies?.token;
     // console.log('token in the middleware : ',token);
     if(!token){
-        return res.status(401).send({message: 'unauthorized access'})
+        return res.status(401).send({message: 'unauthorized access,no token found'})
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
