@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt =require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -8,7 +9,12 @@ const port = process.env.PORT || 5000;
 
 //middleware
 
-app.use(cors({}));
+app.use(cors({
+    origin: [
+        'http://localhost:5174','http://localhost:5175'
+    ],
+    credentials:true
+}));
 app.use(express.json());
 
 console.log(process.env.DB_PASS);
@@ -30,6 +36,16 @@ async function run() {
       .db("AlternativeProduct")
       .collection("RecentQueries");
     const myQurie = client.db("AlternativeProduct").collection("myQurie");
+
+ //Auth related Api
+   app.post('/jwt',async(req,res)=>{
+        const user=req.body;
+        console.log('user for token',user);
+        const token =jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1000h'});
+        res.send({token});
+   })
+
+
 
     //Queries add
     app.post("/newQueries", async (req, res) => {
@@ -99,9 +115,9 @@ async function run() {
       res.send(result);
     });
 
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
