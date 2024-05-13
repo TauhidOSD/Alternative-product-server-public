@@ -39,6 +39,12 @@ const logger =(req,res,next)=>{
     next();
 }
 
+const verifyToken =(req,res,next)=>{
+    const token = req?.cookies?.token;
+    console.log('token in the middleware : ',token);
+    next();
+}
+
 
 async function run() {
   try {
@@ -137,9 +143,9 @@ async function run() {
 
 
     //get recentQuries
-    app.get("/RecentQueries", logger,async (req, res) => {
+    app.get("/RecentQueries", logger,verifyToken,async (req, res) => {
       const result = await recentQueries.find().toArray();
-      console.log('cook cookies',req.cookies)
+    //   console.log('cook cookies',req.cookies)
 
       res.send(result);
     });
