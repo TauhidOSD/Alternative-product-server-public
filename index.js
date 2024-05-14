@@ -77,7 +77,7 @@ async function run() {
     const myQurie = client.db("AlternativeProduct").collection("myQurie");
 
     //Auth related Api
-    app.post("/jwt", async (req, res) => {
+    app.post("/jwt",logger, async (req, res) => {
       const user = req.body;
       console.log("user for token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
@@ -103,10 +103,16 @@ async function run() {
     });
 
     //Queries add
-    app.post("/newQueries", async (req, res) => {
+    app.post("/newQueries",logger, verifyToken, async (req, res) => {
+      console.log("token owner info", req.user, req.query.email);
+
       const Queries = req.body;
       console.log(Queries);
       const result = await myQurie.insertOne(Queries);
+     
+      if (req.user.email !== req.query.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       res.send(result);
     });
 
@@ -158,13 +164,10 @@ async function run() {
     });
 
     //get recentQuries
-    app.get("/RecentQueries", logger, verifyToken, async (req, res) => {
-      console.log("token owner info", req.user, req.query.email);
+    app.get("/RecentQueries",  async (req, res) => {
 
       const result = await recentQueries.find().toArray();
-      if (req.user.email !== req.query.email) {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+     
 
       res.send(result);
     });
