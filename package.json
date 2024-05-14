@@ -19,8 +19,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.6.1",
     "uuid": "^9.0.1"
-  },
+  }
+  ,
   "devDependencies": {
-    "server": "github:Porgramming-Hero-web-course/b9a11-server-side-TauhidOSD"
+    "server": ""
   }
 }
