@@ -17,7 +17,7 @@ app.use(
       "http://localhost:5175",
       "http://localhost:5176",
       "https://alternative-project.vercel.app",
-      "https://vercel.com/komolar-friend/alternative-project/HuhfnDCFqRMQ6zp1ddPhJPhUKH3t",
+      "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
     ],
     credentials: true,
   })
