@@ -18,7 +18,7 @@ app.use(
       "http://localhost:5175",
       "http://localhost:5176",
       "https://alternative-project.vercel.app",
-      "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
+    //   "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
     ],
     credentials: true,
   })
@@ -68,7 +68,7 @@ const verifyToken = (req, res, next) => {
 
 const cookeOption = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production"? true :false,
+  secure: process.env.NODE_ENV === "production" ,
   sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 };
 
@@ -106,16 +106,16 @@ async function run() {
     });
 
     //Queries add
-    app.post("/newQueries",logger, verifyToken, async (req, res) => {
-      console.log("token owner info", req.user, req.query.email);
+    app.post("/newQueries",  async (req, res) => {
+    //   console.log("token owner info", req.user, req.query.email);
 
       const Queries = req.body;
       console.log(Queries);
       const result = await myQurie.insertOne(Queries);
      
-      if (req.user.email !== Queries.email) {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+    //   if (req.user.email !== Queries.email) {
+    //     return res.status(403).send({ message: "forbidden access" });
+    //   }
       res.send(result);
     });
 
