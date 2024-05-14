@@ -13,6 +13,7 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:5175",
       "http://localhost:5176",
@@ -47,7 +48,8 @@ const logger = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
-  // console.log('token in the middleware : ',token);
+  console.log(req?.cookies);
+  console.log('token in the middleware : ',token);
   if (!token) {
     return res
       .status(401)
@@ -59,6 +61,7 @@ const verifyToken = (req, res, next) => {
       return res.status(401).send({ message: "unauthorized access" });
     }
     req.user = decoded;
+    console.log(req.user);
     next();
   });
 };
@@ -110,7 +113,7 @@ async function run() {
       console.log(Queries);
       const result = await myQurie.insertOne(Queries);
      
-      if (req.user.email !== req.query.email) {
+      if (req.user.email !== Queries.email) {
         return res.status(403).send({ message: "forbidden access" });
       }
       res.send(result);
