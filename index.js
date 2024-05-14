@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const jwt =require('jsonwebtoken');
-const cookieParser =require('cookie-parser');
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -10,12 +10,18 @@ const port = process.env.PORT || 5000;
 
 //middleware
 
-app.use(cors({
+app.use(
+  cors({
     origin: [
-        'http://localhost:5174','http://localhost:5175'
+      "http://localhost:5174",
+      "http://localhost:5175",
+      "http://localhost:5176",
+      "https://alternative-product-3f67f.web.app",
+      "https://alternative-product-3f67f.firebaseapp.com",
     ],
-    credentials:true
-}));
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -34,28 +40,34 @@ const client = new MongoClient(uri, {
 
 //middleware for cookies
 
-const logger =(req,res,next)=>{
-    console.log('log info',req.method,req.url);
-    next();
-}
+const logger = (req, res, next) => {
+  console.log("log info", req.method, req.url);
+  next();
+};
 
-const verifyToken =(req,res,next)=>{
-    const token = req?.cookies?.token;
-    // console.log('token in the middleware : ',token);
-    if(!token){
-        return res.status(401).send({message: 'unauthorized access,no token found'})
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  // console.log('token in the middleware : ',token);
+  if (!token) {
+    return res
+      .status(401)
+      .send({ message: "unauthorized access,no token found" });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
     }
+    req.user = decoded;
+    next();
+  });
+};
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) =>{
-        if(err){
-          return res.status(401).send({message: 'unauthorized access'})  
-        }
-        req.user = decoded;
-        next();
-    })
-    
-}
-
+const cookeOption = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production"? true :false,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
 
 async function run() {
   try {
@@ -64,102 +76,94 @@ async function run() {
       .collection("RecentQueries");
     const myQurie = client.db("AlternativeProduct").collection("myQurie");
 
- //Auth related Api
-   app.post('/jwt',async(req,res)=>{
-        const user=req.body;
-        console.log('user for token',user);
-        const token =jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1000h'});
-        // res.cookie('token',token,{
-        //    httpOnly:true,
-        //    secure:true, 
-        //    sameSite: 'strict'
-        // })
-        console.log(token);
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-
+    //Auth related Api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("user for token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1000h",
+      });
+      // res.cookie('token',token,{
+      //    httpOnly:true,
+      //    secure:true,
+      //    sameSite: 'strict'
+      // })
+      console.log(token);
+      res
+        .cookie("token", token,cookeOption, {
+        
         })
-        .send({success:true,token});
-   })
-   //cookie user logout
-   app.post('/logout',async(req,res)=>{
-    const user =req.body;
-    console.log('logging out',user);
-    res.clearCookie('token',{maxAge: 0}).send({success:true})
-   })
-
-
+        .send({ success: true, token });
+    });
+    //cookie user logout
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("logging out", user);
+      res.clearCookie("token", { ...cookeOption,maxAge: 0  }).send({ success: true });
+    });
 
     //Queries add
     app.post("/newQueries", async (req, res) => {
       const Queries = req.body;
       console.log(Queries);
-      const result =await myQurie.insertOne(Queries);
+      const result = await myQurie.insertOne(Queries);
       res.send(result);
     });
 
-    app.get("/newQueries/:email",async(req,res)=>{
-        console.log(req.params.email);
-        const result = await myQurie.find({email:req.params.email}).toArray();
-        res.send(result);
-    })
+    app.get("/newQueries/:email", async (req, res) => {
+      console.log(req.params.email);
+      const result = await myQurie.find({ email: req.params.email }).toArray();
+      res.send(result);
+    });
 
+    //delete
+    app.delete("/newQueries/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await myQurie.deleteOne(query);
+      res.send(result);
+    });
 
-    //delete 
-    app.delete('/newQueries/:id',async(req,res)=>{
-       const id=req.params.id;
-       const query={_id: new ObjectId(id)} 
-       const result =await myQurie.deleteOne(query);
-       res.send(result);
-    })
-    
-    app.get('/newQueries/:id',async(req,res)=>{
-        const id=req.params.id;
-        const query ={_id: (id)}
-        const result =await myQurie.findOne(query);
-        res.send(result);
-    })
+    app.get("/newQueries/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await myQurie.findOne(query);
+      res.send(result);
+    });
     //
-    //upadate 
-    app.put('/newQueries/:id',async(req,res)=>{
-       const id=req.params.id; 
-       const filter ={_id: (id)}
-       const option ={upsert:true};
-       const updateQuries=req.body;
-       const update={
-        $set:{
-             P_name:updateQuries.P_name ,
-              P_Brand:updateQuries.P_Brand ,
-               P_URL:updateQuries.P_URL ,
-                QueryTitle:updateQuries.QueryTitle ,
-                 BoycottingReason:updateQuries.BoycottingReason 
-
-        }
-       }
-       const result =await myQurie.updateOne(filter,update, option);
-       res.send(result);
-
-    })
-
-
+    //upadate
+    app.put("/newQueries/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: id };
+      const option = { upsert: true };
+      const updateQuries = req.body;
+      const update = {
+        $set: {
+          P_name: updateQuries.P_name,
+          P_Brand: updateQuries.P_Brand,
+          P_URL: updateQuries.P_URL,
+          QueryTitle: updateQuries.QueryTitle,
+          BoycottingReason: updateQuries.BoycottingReason,
+        },
+      };
+      const result = await myQurie.updateOne(filter, update, option);
+      res.send(result);
+    });
 
     //Get Queries
-    app.get("/newQueries",async(req,res)=>{
-        const cursor=myQurie.find();
-        const result =await cursor.toArray();
-        res.send(result);
-    })
-
+    app.get("/newQueries", async (req, res) => {
+      const cursor = myQurie.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     //get recentQuries
-    app.get("/RecentQueries", logger,verifyToken,async (req, res) => {
-        console.log('token owner info',req.user,req.query.email);
+    app.get("/RecentQueries", logger, verifyToken, async (req, res) => {
+      console.log("token owner info", req.user, req.query.email);
 
       const result = await recentQueries.find().toArray();
-      if(req.user.email !== req.query.email){
-        return res.status(403).send({message: 'forbidden access'})
+      if (req.user.email !== req.query.email) {
+        return res.status(403).send({ message: "forbidden access" });
       }
 
       res.send(result);
@@ -179,7 +183,6 @@ run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
-  
 });
 
 app.listen(port, () => {
