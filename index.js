@@ -18,8 +18,8 @@ app.use(
       "http://localhost:5175",
       "http://localhost:5176",
       "https://alternative-project.vercel.app",
-      "https://transcendent-rolypoly-bb676f.netlify.app"
-    //   "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
+      "https://transcendent-rolypoly-bb676f.netlify.app",
+      //   "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
     ],
     credentials: true,
   })
@@ -50,7 +50,7 @@ const logger = (req, res, next) => {
 const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
   console.log(req?.cookies);
-  console.log('token in the middleware : ',token);
+  console.log("token in the middleware : ", token);
   if (!token) {
     return res
       .status(401)
@@ -69,7 +69,7 @@ const verifyToken = (req, res, next) => {
 
 const cookeOption = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production" ,
+  secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 };
 
@@ -80,53 +80,56 @@ async function run() {
       .collection("RecentQueries");
     const myQurie = client.db("AlternativeProduct").collection("myQurie");
 
-    const recomendationCollection =client.db("AlternativeProduct").collection("recomendation");
+    const recomendationCollection = client
+      .db("AlternativeProduct")
+      .collection("recomendation");
 
     //save recomendation data in database
-    app.post('/recomendation',async(req,res)=>{
-        const recomendation =req.body;
-        console.log(recomendation)
-        
-        const result =await recomendationCollection.insertOne(recomendation)
-        res.send(result)
+    app.post("/recomendation", async (req, res) => {
+      const recomendation = req.body;
+      console.log(recomendation);
+
+      const result = await recomendationCollection.insertOne(recomendation);
+      res.send(result);
+    });
+
+    //get data from myRecomendation
+    app.get('/recomendation',async(req,res)=>{
+        const myrecomen = recomendationCollection.find()
+        const result =await myrecomen.toArray();
+        res.send(result);
     })
     
-    
+
     //Auth related Api
-    app.post("/jwt",logger, async (req, res) => {
+    app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
       console.log("user for token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1000h",
       });
-     
+
       console.log(token);
       res
-        .cookie("token", token,cookeOption, {
-        
-        })
+        .cookie("token", token, cookeOption, {})
         .send({ success: true, token });
     });
 
-    
     //cookie user logout
     app.post("/logout", async (req, res) => {
       const user = req.body;
       console.log("logging out", user);
-      res.clearCookie("token", { ...cookeOption,maxAge: 0  }).send({ success: true });
+      res
+        .clearCookie("token", { ...cookeOption, maxAge: 0 })
+        .send({ success: true });
     });
 
     //Queries add
-    app.post("/newQueries",  async (req, res) => {
-    //   console.log("token owner info", req.user, req.query.email);
-
+    app.post("/newQueries", async (req, res) => {
       const Queries = req.body;
       console.log(Queries);
       const result = await myQurie.insertOne(Queries);
-     
-    //   if (req.user.email !== Queries.email) {
-    //     return res.status(403).send({ message: "forbidden access" });
-    //   }
+
       res.send(result);
     });
 
@@ -178,17 +181,12 @@ async function run() {
     });
 
     //get recentQuries
-    app.get("/RecentQueries",  async (req, res) => {
-
+    app.get("/RecentQueries", async (req, res) => {
       const result = await recentQueries.find().toArray();
-     
 
       res.send(result);
     });
 
-    // await client.connect();
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
