@@ -94,11 +94,11 @@ async function run() {
     });
 
     //get data from myRecomendation
-    app.get('/recomendation',async(req,res)=>{
-        const myrecomen = recomendationCollection.find()
-        const result =await myrecomen.toArray();
-        res.send(result);
-    })
+    // app.get('/recomendation',async(req,res)=>{
+    //     const myrecomen = recomendationCollection.find()
+    //     const result =await myrecomen.toArray();
+    //     res.send(result);
+    // })
     
 
     //Auth related Api
