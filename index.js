@@ -14,10 +14,11 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://localhost:5176",
+    //   "http://localhost:5174",
+    //   "http://localhost:5175",
+    //   "http://localhost:5176",
       "https://alternative-project.vercel.app",
+      "https://transcendent-rolypoly-bb676f.netlify.app"
     //   "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
     ],
     credentials: true,
@@ -79,6 +80,18 @@ async function run() {
       .collection("RecentQueries");
     const myQurie = client.db("AlternativeProduct").collection("myQurie");
 
+    const recomendationCollection =client.db("AlternativeProduct").collection("recomendation");
+
+    //save recomendation data in database
+    app.post('/recomendation',async(req,res)=>{
+        const recomendation =req.body;
+        console.log(recomendation)
+        
+        const result =await recomendationCollection.insertOne(recomendation)
+        res.send(result)
+    })
+    
+    
     //Auth related Api
     app.post("/jwt",logger, async (req, res) => {
       const user = req.body;
@@ -86,11 +99,7 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1000h",
       });
-      // res.cookie('token',token,{
-      //    httpOnly:true,
-      //    secure:true,
-      //    sameSite: 'strict'
-      // })
+     
       console.log(token);
       res
         .cookie("token", token,cookeOption, {
@@ -98,6 +107,8 @@ async function run() {
         })
         .send({ success: true, token });
     });
+
+    
     //cookie user logout
     app.post("/logout", async (req, res) => {
       const user = req.body;
