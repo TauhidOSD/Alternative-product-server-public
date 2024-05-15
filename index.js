@@ -14,9 +14,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-    //   "http://localhost:5174",
-    //   "http://localhost:5175",
-    //   "http://localhost:5176",
+      "http://localhost:5174",
+      "http://localhost:5175",
+      "http://localhost:5176",
       "https://alternative-project.vercel.app",
       "https://transcendent-rolypoly-bb676f.netlify.app"
     //   "alternative-project-9fe1c8pfi-komolar-friend.vercel.app",
